@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Campus Event System</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+
+<style>
+
+/* 🌌 Background */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    background: linear-gradient(-45deg, #0a0f2c, #1a1f4d, #16213e);
+    background-size: 400% 400%;
+    animation: bg 10s infinite;
+    color: white;
+}
+
+@keyframes bg {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
+
+/* Header */
+header {
+    text-align: center;
+    padding: 20px;
+    font-size: 24px;
+    color: gold;
+}
+
+/* Layout */
+.container {
+    padding: 20px;
+    text-align: center;
+}
+
+/* Cards */
+.card {
+    background: rgba(255,255,255,0.08);
+    padding: 20px;
+    margin: 15px auto;
+    border-radius: 12px;
+    width: 320px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+}
+
+/* Inputs */
+input, select {
+    width: 90%;
+    padding: 10px;
+    margin: 8px;
+    border-radius: 6px;
+    border: none;
+}
+
+/* Buttons */
+button {
+    padding: 10px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 6px;
+    border: none;
+    background: linear-gradient(45deg,#1f3c88,gold);
+    color: white;
+    font-weight: bold;
+}
+
+/* Event Grid */
+.event-grid {
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 15px;
+}
+
+/* Event Card */
+.event-card {
+    padding: 15px;
+    border-radius: 10px;
+    background: linear-gradient(45deg,#1f3c88,#4361ee);
+}
+
+/* Popup Form */
+#eventForm {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #111;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid gold;
+    display: none;
+    width: 300px;
+}
+
+.success { color: lightgreen; }
+.error { color: red; }
+
+/* Hidden */
+.hidden { display:none; }
+
+</style>
+</head>
+
+<body>
+
+<header>🎓 Smart Campus Event Management</header>
+
+<div class="container">
+
+<!-- LOGIN -->
+<div id="loginPage" class="card">
+    <h2>Select Login</h2>
+    <button onclick="showStudent()">Student</button>
+    <button onclick="showAdmin()">Admin</button>
+</div>
+
+<!-- STUDENT LOGIN -->
+<div id="studentLogin" class="card hidden">
+    <h3>Student Login</h3>
+    <input id="studentName" placeholder="Enter Name">
+    <button onclick="openStudent()">Login</button>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="adminLogin" class="card hidden">
+    <h3>Admin Login</h3>
+    <input id="adminUser" placeholder="Username">
+    <input id="adminPass" type="password" placeholder="Password">
+    <button onclick="openAdmin()">Login</button>
+</div>
+
+<!-- STUDENT PAGE -->
+<div id="studentPage" class="hidden">
+
+    <h2>Events</h2>
+
+    <div class="event-grid">
+        <div class="event-card">
+            AI Workshop <br><br>
+            <button onclick="openForm('AI Workshop')">Register</button>
+        </div>
+
+        <div class="event-card">
+            Robotics Seminar <br><br>
+            <button onclick="openForm('Robotics Seminar')">Register</button>
+        </div>
+
+        <div class="event-card">
+            Future AI Seminar <br><br>
+            <button onclick="openForm('Future AI Seminar')">Register</button>
+        </div>
+
+        <div class="event-card">
+            Tech Talk Series <br><br>
+            <button onclick="openForm('Tech Talk Series')">Register</button>
+        </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="card">
+        <h3>My Dashboard</h3>
+        <ul id="dashboardList"></ul>
+    </div>
+
+</div>
+
+<!-- ADMIN PAGE -->
+<div id="adminPage" class="hidden">
+
+    <div class="card">
+        <h3>Add Event</h3>
+        <input id="eventName" placeholder="Event Name">
+        <button onclick="addEvent()">Add Event</button>
+    </div>
+
+    <div class="card">
+        <h3>Statistics</h3>
+        <p>Total Events: <span id="totalEvents">4</span></p>
+        <p>Total Registrations: <span id="totalReg">0</span></p>
+    </div>
+
+</div>
+
+</div>
+
+<!-- EVENT FORM -->
+<div id="eventForm">
+    <h3>Register Event</h3>
+
+    <input id="name" placeholder="Name">
+    <input id="dept" placeholder="Department">
+
+    <select id="slot">
+        <option>Morning</option>
+        <option>Afternoon</option>
+    </select>
+
+    <p id="msg"></p>
+
+    <button onclick="submitForm()">Submit</button>
+    <button onclick="closeForm()">Close</button>
+</div>
+
+<script>
+
+/* Navigation */
+function showStudent(){
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("studentLogin").style.display="block";
+}
+
+function showAdmin(){
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("adminLogin").style.display="block";
+}
+
+function openStudent(){
+    let name = document.getElementById("studentName").value;
+    if(!name){ alert("Enter name"); return; }
+
+    document.getElementById("studentLogin").style.display="none";
+    document.getElementById("studentPage").style.display="block";
+}
+
+function openAdmin(){
+    document.getElementById("adminLogin").style.display="none";
+    document.getElementById("adminPage").style.display="block";
+}
+
+/* Event Form */
+let selectedEvent = "";
+let totalRegistrations = 0;
+
+function openForm(eventName){
+    selectedEvent = eventName;
+    document.getElementById("eventForm").style.display = "block";
+}
+
+function closeForm(){
+    document.getElementById("eventForm").style.display = "none";
+    document.getElementById("msg").innerText = "";
+}
+
+/* Register */
+function submitForm(){
+
+    let name = document.getElementById("name").value;
+    let dept = document.getElementById("dept").value;
+
+    if(!name || !dept){
+        document.getElementById("msg").className = "error";
+        document.getElementById("msg").innerText = "Please fill all fields";
+        return;
+    }
+
+    // Success message
+    document.getElementById("msg").className = "success";
+    document.getElementById("msg").innerText = "Registration Successful!";
+
+    // Add to dashboard
+    let li = document.createElement("li");
+    li.innerText = selectedEvent + " - " + name;
+
+    document.getElementById("dashboardList").appendChild(li);
+
+    // Update stats
+    totalRegistrations++;
+    document.getElementById("totalReg").innerText = totalRegistrations;
+
+    // Reset fields
+    document.getElementById("name").value="";
+    document.getElementById("dept").value="";
+
+    setTimeout(closeForm, 1500);
+}
+
+/* Admin Add Event */
+function addEvent(){
+    let name = document.getElementById("eventName").value;
+
+    if(!name){ alert("Enter event name"); return; }
+
+    let grid = document.querySelector(".event-grid");
+
+    let div = document.createElement("div");
+    div.className="event-card";
+    div.innerHTML = name + "<br><br><button onclick=\"openForm('"+name+"')\">Register</button>";
+
+    grid.appendChild(div);
+
+    // update total events
+    let total = document.querySelectorAll(".event-card").length;
+    document.getElementById("totalEvents").innerText = total;
+
+    document.getElementById("eventName").value="";
+}
+
+</script>
+
+</body>
+</html>
